@@ -1,0 +1,43 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: 'VT323', monospace;
+    font-size: 12px;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(to left top, #140843, #5D1126 80%);
+    background-size: cover;
+    color: #FCED5E;
+    padding: 2rem;
+}
+
+.tetris {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.tetris__header {
+    font-size: 4rem;
+}
+
+.tetris__game {
+    width: 100%;
+}
+
+.tetris__controls {
+    list-style: none;
+    font-size: 3rem;
+    line-height: 4rem;
+}
