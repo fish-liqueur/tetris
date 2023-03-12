@@ -35,4 +35,4 @@ export type RenderBlockParams = {
     topY: number,
 }
 
-export type PieceMoveDirection = 'left'|'right'|'down';
+export type PieceMoveType = 'left'|'right'|'down'|'rotate';

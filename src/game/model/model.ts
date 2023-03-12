@@ -6,16 +6,18 @@ import {
     GameBoardMatrix,
     GameSizeInBlocks,
     GameCurrentState,
-    PieceMoveDirection
+    PieceMoveType
 } from "@/types/types";
 
 export class Model {
     view: View;
     started: boolean;
     pause: boolean;
+    lost = false;
     speed = 0;
     score = 0;
     lines = 0;
+    interval = null;
 
     gameSizeInBlocks: GameSizeInBlocks;
     gameBoardStatic: Board;
@@ -27,28 +29,12 @@ export class Model {
             speed: this.speed,
             score: this.score,
             lines: this.lines,
-            board: this.getBoard,
+            board: Model.mergePieceToBoard(this.gameBoardStatic, this.currentPiece),
             nextPiece: this.nextPiece,
             started: this.started,
             pause: this.pause,
             gameSizeInBlocks: this.gameSizeInBlocks,
         };
-    }
-
-    get getBoard(): GameBoardMatrix {
-        const { figure, y, x } = this.currentPiece;
-        const height = this.currentPiece.height;
-        const width = this.currentPiece.width;
-        const boardStatic = cloneElement(this.gameBoardStatic.matrix);
-        for (let rowNumber = 0; rowNumber < height; rowNumber++) {
-            for (let blockNumber = 0; blockNumber < width; blockNumber++) {
-                const nextBlockFigure = figure[rowNumber][blockNumber];
-                if (nextBlockFigure !== 0) {
-                    boardStatic[rowNumber + y][blockNumber + x] = nextBlockFigure;
-                }
-            }
-        }
-        return boardStatic;
     }
 
     constructor(view: View, gameSizeInBlocks: GameSizeInBlocks) {
@@ -63,14 +49,45 @@ export class Model {
         this.view.renderGame(this.getState);
     }
 
-    moveCurrentPiece(direction: PieceMoveDirection): void {
-        const method = direction === 'left' ?
-            Piece.prototype.moveLeft :
-            direction === 'right' ? Piece.prototype.moveRight : Piece.prototype.moveDown;
-        this.handleIfPossible([[method]]);
+    handleNewTurn(userAction?: PieceMoveType):void {
+        if (this.pause) return;
+
+        if (userAction) {
+            let userActionSuccess: boolean;
+            switch(userAction) {
+                case 'left':
+                    userActionSuccess = this.handleIfPossible([[Piece.prototype.moveLeft]]);
+                    break;
+                case 'right':
+                    userActionSuccess = this.handleIfPossible([[Piece.prototype.moveRight]]);
+                    break;
+                case 'down':
+                    userActionSuccess = this.handleIfPossible([[Piece.prototype.moveDown]]);
+                    break;
+                case 'rotate':
+                    userActionSuccess = this.rotateCurrentPiece();
+                    break;
+                default:
+                    userActionSuccess = false;
+            }
+
+          if (!userActionSuccess) return;
+
+        } else {
+            const movedDownSuccessfully = this.handleIfPossible([[Piece.prototype.moveDown]]);
+
+            if (!movedDownSuccessfully) {
+                this.gameBoardStatic.addPieceToMatrix(this.currentPiece);
+                this.updatePieces();
+            }
+        }
+
+        const deletedRowsCount = this.gameBoardStatic.deleteEmptyRows();
+        this.lines += deletedRowsCount;
+        this.speed = Math.floor(this.lines / 10);
     }
 
-    rotateCurrentPiece(): void {
+    private rotateCurrentPiece(): boolean {
         const methodChains = this.currentPiece.x < 0 ?
             [
                 [Piece.prototype.rotate],
@@ -84,10 +101,10 @@ export class Model {
                     [Piece.prototype.moveLeft, Piece.prototype.moveLeft, Piece.prototype.rotate]
                 ] :
                 [[Piece.prototype.rotate]];
-        this.handleIfPossible(methodChains);
+       return this.handleIfPossible(methodChains);
     }
 
-    private handleIfPossible(methodChains: Function[][]): void {
+    private handleIfPossible(methodChains: Function[][]): boolean {
         for (let i = 0; i < methodChains.length; i++) {
             const gameBoardStaticProxy = cloneInstance(this.gameBoardStatic);
             const currentPieceProxy = cloneInstance(this.currentPiece);
@@ -99,11 +116,15 @@ export class Model {
                     method.call(this.currentPiece);
                 });
                 this.view.renderGame(this.getState);
-                return;
+                return true;
             }
         }
-
+        return false;
     }
+
+    // private handleLoseGame():void {
+    //     this.pause = true;
+    // }
 
     private static hasCollision(staticBoard: Board, currentPiece: Piece): boolean {
         const { figure, y, x } = currentPiece;
@@ -123,5 +144,26 @@ export class Model {
         }
 
         return false;
+    }
+
+    private updatePieces(): void {
+        this.currentPiece = this.nextPiece;
+        this.nextPiece = new Piece(this.gameSizeInBlocks.width);
+    }
+
+    static mergePieceToBoard(board: Board, piece: Piece): GameBoardMatrix {
+        const { figure, y, x } = piece;
+        const height = piece.height;
+        const width = piece.width;
+        const matrixCopy = cloneElement(board.matrix);
+        for (let rowNumber = 0; rowNumber < height; rowNumber++) {
+            for (let blockNumber = 0; blockNumber < width; blockNumber++) {
+                const nextBlockFigure = figure[rowNumber][blockNumber];
+                if (nextBlockFigure !== 0) {
+                    matrixCopy[rowNumber + y][blockNumber + x] = nextBlockFigure;
+                }
+            }
+        }
+        return matrixCopy;
     }
 }

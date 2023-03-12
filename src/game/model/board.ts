@@ -1,4 +1,6 @@
 import {GameBlock, GameBoardMatrix} from "@/types/types";
+import {Piece} from "@game/model/piece";
+import { Model } from "@game/model/model"
 
 export class Board {
     width: number;
@@ -6,10 +8,9 @@ export class Board {
     matrix: GameBoardMatrix;
 
     constructor();
-    constructor(width: number, height: number);
     constructor(preConfiguredBoard: GameBoardMatrix);
+    constructor(width: number, height: number);
     constructor(param1?: number | GameBoardMatrix, height?:number) {
-        console.log('Board ', param1, typeof param1, height, typeof height);
         if (typeof param1 === 'number' && typeof height === 'number' || !param1) {
             this.width = param1 || 10;
             this.height = height || 20;
@@ -30,5 +31,16 @@ export class Board {
         } else {
             throw new Error('Wrong params!');
         }
+    }
+
+    deleteEmptyRows(): number {
+        const matrixFiltered = this.matrix.filter((row:GameBlock[]) => !row.includes(0));
+        const rowsDeleted = this.matrix.length - matrixFiltered.length;
+        this.matrix = matrixFiltered;
+        return rowsDeleted;
+    }
+
+    addPieceToMatrix(piece: Piece): void {
+        this.matrix = Model.mergePieceToBoard(this, piece);
     }
 }

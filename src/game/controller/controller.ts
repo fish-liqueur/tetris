@@ -21,20 +21,16 @@ export class Controller {
                 console.log('Space pressed');
                 break;
             case 'ArrowLeft':
-                console.log('ArrowLeft pressed');
-                this.model.moveCurrentPiece('left');
+                this.model.handleNewTurn('left');
                 break;
             case 'ArrowUp':
-                this.model.rotateCurrentPiece();
-                console.log('ArrowUp pressed');
+                this.model.handleNewTurn('rotate');
                 break;
             case 'ArrowRight':
-                console.log('ArrowRight pressed');
-                this.model.moveCurrentPiece('right');
+                this.model.handleNewTurn('right');
                 break;
             case 'ArrowDown':
-                console.log('ArrowDown pressed');
-                this.model.moveCurrentPiece('down');
+                this.model.handleNewTurn('down');
                 break;
         }
     }
