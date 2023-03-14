@@ -1,5 +1,5 @@
 import { Model } from "@game/model/model";
-import { autobind } from "@/decorators/autobind";
+import {autobind} from "@/decorators/autobind";
 
 export class Controller {
     model: Model;
@@ -8,17 +8,13 @@ export class Controller {
         this.model = model;
 
         document.addEventListener('keydown', this.handleKeyDown);
-        // document.addEventListener('keyup', this.handleKeyUp.bind(this));
-
     }
 
     @autobind
     handleKeyDown(e: KeyboardEvent) {
-        console.log('handleKeyDown ', this)
-
         switch (e.code) {
             case 'Space':
-                console.log('Space pressed');
+                this.model.handlePressSpace();
                 break;
             case 'ArrowLeft':
                 this.model.handleNewTurn('left');

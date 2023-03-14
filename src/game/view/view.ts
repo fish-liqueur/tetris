@@ -172,30 +172,30 @@ export class View {
     private renderOverlay(state: GameCurrentState): void {
         const { speed, score, lines, started, lost } = state;
         const { relativeUnit, width, blockSide } = this.viewSizeConstants;
-        const text: string[] = [];
-        if (!started) {
-            text.push('Press Space');
-            text.push('to start the game!');
-        } else if (lost) {
-            text.push('What a game!');
-            text.push('And by the numbers:');
-            text.push(`🏆 score: ${score}`);
-            text.push(`💥 lines destroyed: ${lines}`);
-            text.push(`🔥 highest speed: ${speed}`);
-            text.push('Press Space to restart');
-        } else {
-            text.push('Game paused!');
-            text.push('Press Space to resume');
-        }
         const ctx = this.context;
+        const textX = width / 2 + blockSide;
         ctx.globalAlpha = 1;
         ctx.font = `${0.8 * relativeUnit}px VT323`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = lost ? Colors.uiPink : Colors.uiYellow;
-        text.forEach((string, i) => {
-            ctx.fillText(string,  blockSide, width / 2 + relativeUnit * i);
-        });
+        ctx.fillStyle = Colors.uiYellow;
+
+        if (!started) {
+            ctx.fillText('Press Space',  textX, width / 2 + relativeUnit);
+            ctx.fillText('to start the game!',  textX, width / 2 + 2 * relativeUnit);
+        } else if (lost) {
+            ctx.fillText('What a game!',  textX, width / 2 + relativeUnit);
+            ctx.fillStyle = Colors.uiPink;
+            ctx.fillText('And by the numbers:',  textX, width / 2 + 3 * relativeUnit);
+            ctx.fillText(`🏆 score: ${score}`,  textX, width / 2 + 4 * relativeUnit);
+            ctx.fillText(`🧨 lines destroyed: ${lines}`,  textX, width / 2 + 5 * relativeUnit);
+            ctx.fillText(`🔥 highest speed: ${speed}`,  textX, width / 2 + 6 * relativeUnit);
+            ctx.fillStyle = Colors.uiYellow;
+            ctx.fillText('Press Space to restart',  textX, width / 2 + 8 * relativeUnit);
+        } else {
+            ctx.fillText('Game paused',  textX, width / 2 + relativeUnit);
+            ctx.fillText('Press Space to resume',  textX, width / 2 + 2 * relativeUnit);
+        }
     }
 
     private wrapPieceWithEmptyBlocks(piece: Piece):GameBoardMatrix {

@@ -16,8 +16,11 @@ export class Model {
     pause: boolean;
     lost = false;
     speed = 0;
+    speedChanged = 0;
     score = 0;
+    scoreChanged = 0;
     lines = 0;
+    linesChanged = 0;
     interval: NodeJS.Timer | null;
 
     gameSizeInBlocks: GameSizeInBlocks;
@@ -50,12 +53,42 @@ export class Model {
         this.nextPiece = new Piece(this.gameSizeInBlocks.width);
 
         this.view.renderGame(this.getState);
-        // this.startTimer();
+    }
+
+
+    startTimer() {
+        const speed = 1000 - this.speed * 100;
+        this.pause = false;
+        this.view.renderGame(this.getState);
+
+        if (!this.interval) {
+            this.interval = setInterval(this.handleNewTurn, speed > 0 ? speed : 100);
+        }
+    }
+
+    stopTimer() {
+        if (this.interval) {
+            this.pause = true;
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+        this.view.renderGame(this.getState);
+    }
+
+    handlePressSpace() {
+        if (!this.started) {
+            this.started = true;
+            this.startTimer();
+        } else if (this.lost) {
+            this.resetGame();
+        } else {
+            this.interval ? this.stopTimer() : this.startTimer();
+        }
     }
 
     @autobind
     handleNewTurn(userAction?: PieceMoveType):void {
-        if (this.pause) return;
+        if (this.pause || this.lost) return;
 
         if (userAction) {
             let userActionSuccess: boolean;
@@ -77,19 +110,39 @@ export class Model {
             }
 
           if (!userActionSuccess) return;
+          
+          if (userAction === 'down') {
+              this.scoreChanged = this.speed + 1;
+              this.score += this.scoreChanged;
+          }
 
         } else {
             const movedDownSuccessfully = this.handleIfPossible([[Piece.prototype.moveDown]]);
+
+            if (!movedDownSuccessfully && this.currentPiece.y < 0) {
+                // Game is lost!
+                this.lost = true;
+                this.view.renderGame(this.getState);
+                return;
+            }
 
             if (!movedDownSuccessfully) {
                 this.gameBoardStatic.addPieceToMatrix(this.currentPiece);
                 this.updatePieces();
             }
-        }
 
-        const deletedRowsCount = this.gameBoardStatic.deleteFilledRows();
-        this.lines += deletedRowsCount;
-        this.speed = Math.floor(this.lines / 10);
+            const deletedRowsCount = this.gameBoardStatic.deleteFilledRows();
+            let speedAtTheEndOfTurn: number;
+
+            this.lines += deletedRowsCount;
+            this.linesChanged = deletedRowsCount;
+            this.scoreChanged = deletedRowsCount ? Model.getScoreMultiplier(deletedRowsCount) * (this.speed + 1) : 0;
+            this.score += this.scoreChanged;
+
+            speedAtTheEndOfTurn = Math.floor(this.lines / 10);
+            this.speedChanged = speedAtTheEndOfTurn - this.speed;
+            this.speed = speedAtTheEndOfTurn;
+        }
 
         this.view.renderGame(this.getState);
     }
@@ -133,19 +186,20 @@ export class Model {
         this.nextPiece = new Piece(this.gameSizeInBlocks.width);
     }
 
-    startTimer() {
-        const speed = 1000 - this.speed * 100;
-
-        if (!this.interval) {
-            this.interval = setInterval(this.handleNewTurn, speed > 0 ? speed : 100);
-        }
-    }
-
-    stopTimer() {
-        if (this.interval) {
-            clearInterval(this.interval);
-            this.interval = null;
-        }
+    private resetGame(): void {
+        this.stopTimer();
+        this.lost = false;
+        this.started = true;
+        this.gameBoardStatic = new Board(this.gameSizeInBlocks.width, this.gameSizeInBlocks.height);
+        this.currentPiece = new Piece(this.gameSizeInBlocks.width);
+        this.nextPiece = new Piece(this.gameSizeInBlocks.width);
+        this.speed = 0;
+        this.speedChanged = 0;
+        this.score = 0;
+        this.scoreChanged = 0;
+        this.lines = 0;
+        this.linesChanged = 0;
+        this.startTimer();
     }
 
     static mergePieceToBoard(board: Board, piece: Piece): GameBoardMatrix {
@@ -181,5 +235,9 @@ export class Model {
             }
         }
         return false;
+    }
+
+    private static getScoreMultiplier(deletedLinesCount: number) {
+        return [40, 100, 300, 1200][deletedLinesCount - 1] || 1;
     }
 }
