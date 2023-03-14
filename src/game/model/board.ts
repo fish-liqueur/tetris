@@ -1,5 +1,5 @@
-import {GameBlock, GameBoardMatrix} from "@/types/types";
-import {Piece} from "@game/model/piece";
+import { GameBlock, GameBoardMatrix } from "@/types/types";
+import { Piece } from "@game/model/piece";
 import { Model } from "@game/model/model"
 
 export class Board {
@@ -33,14 +33,28 @@ export class Board {
         }
     }
 
-    deleteEmptyRows(): number {
-        const matrixFiltered = this.matrix.filter((row:GameBlock[]) => !row.includes(0));
-        const rowsDeleted = this.matrix.length - matrixFiltered.length;
+    deleteFilledRows(): number {
+        const matrixFiltered = this.matrix.filter((row:GameBlock[]) => {
+            return row.some(el => el === 0);
+        });
+        const rowsDeleted = this.height - matrixFiltered.length;
+
+        for (let i = 0; i < rowsDeleted; i++) {
+            matrixFiltered.unshift(this.createEmptyRow());
+        }
         this.matrix = matrixFiltered;
         return rowsDeleted;
     }
 
     addPieceToMatrix(piece: Piece): void {
         this.matrix = Model.mergePieceToBoard(this, piece);
+    }
+
+    private createEmptyRow(): GameBlock[] {
+        const newRow: GameBlock[] = [];
+        for (let i = 0; i < this.width; i++) {
+            newRow.push(0)
+        }
+        return newRow;
     }
 }

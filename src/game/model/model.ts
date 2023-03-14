@@ -1,13 +1,14 @@
 import { Piece } from "@game/model/piece";
 import { Board } from "@game/model/board";
 import { View } from "@game/view/view";
-import { cloneElement, cloneInstance} from "@/utils/utils";
+import { cloneElement, cloneInstance } from "@/utils/utils";
 import {
     GameBoardMatrix,
     GameSizeInBlocks,
     GameCurrentState,
     PieceMoveType
 } from "@/types/types";
+import { autobind } from "@/decorators/autobind";
 
 export class Model {
     view: View;
@@ -17,7 +18,7 @@ export class Model {
     speed = 0;
     score = 0;
     lines = 0;
-    interval = null;
+    interval: NodeJS.Timer | null;
 
     gameSizeInBlocks: GameSizeInBlocks;
     gameBoardStatic: Board;
@@ -41,14 +42,17 @@ export class Model {
         this.view = view;
         this.started = true;
         this.pause = false;
+        this.interval = null;
         this.gameSizeInBlocks = gameSizeInBlocks;
         this.gameBoardStatic = new Board(this.gameSizeInBlocks.width, this.gameSizeInBlocks.height);
         this.currentPiece = new Piece(this.gameSizeInBlocks.width);
         this.nextPiece = new Piece(this.gameSizeInBlocks.width);
 
         this.view.renderGame(this.getState);
+        this.startTimer();
     }
 
+    @autobind
     handleNewTurn(userAction?: PieceMoveType):void {
         if (this.pause) return;
 
@@ -82,9 +86,11 @@ export class Model {
             }
         }
 
-        const deletedRowsCount = this.gameBoardStatic.deleteEmptyRows();
+        const deletedRowsCount = this.gameBoardStatic.deleteFilledRows();
         this.lines += deletedRowsCount;
         this.speed = Math.floor(this.lines / 10);
+
+        this.view.renderGame(this.getState);
     }
 
     private rotateCurrentPiece(): boolean {
@@ -115,16 +121,47 @@ export class Model {
                 methodChains[i].forEach((method: Function) => {
                     method.call(this.currentPiece);
                 });
-                this.view.renderGame(this.getState);
                 return true;
             }
         }
         return false;
     }
 
-    // private handleLoseGame():void {
-    //     this.pause = true;
-    // }
+    private updatePieces(): void {
+        this.currentPiece = this.nextPiece;
+        this.nextPiece = new Piece(this.gameSizeInBlocks.width);
+    }
+
+    startTimer() {
+        const speed = 1000 - this.speed * 100;
+
+        if (!this.interval) {
+            this.interval = setInterval(this.handleNewTurn, speed > 0 ? speed : 100);
+        }
+    }
+
+    stopTimer() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
+    static mergePieceToBoard(board: Board, piece: Piece): GameBoardMatrix {
+        const { figure, y, x } = piece;
+        const height = piece.height;
+        const width = piece.width;
+        const matrixCopy = cloneElement(board.matrix);
+        for (let rowNumber = 0; rowNumber < height; rowNumber++) {
+            for (let blockNumber = 0; blockNumber < width; blockNumber++) {
+                const nextBlockFigure = figure[rowNumber][blockNumber];
+                if (nextBlockFigure !== 0) {
+                    matrixCopy[rowNumber + y][blockNumber + x] = nextBlockFigure;
+                }
+            }
+        }
+        return matrixCopy;
+    }
 
     private static hasCollision(staticBoard: Board, currentPiece: Piece): boolean {
         const { figure, y, x } = currentPiece;
@@ -142,28 +179,6 @@ export class Model {
                 }
             }
         }
-
         return false;
-    }
-
-    private updatePieces(): void {
-        this.currentPiece = this.nextPiece;
-        this.nextPiece = new Piece(this.gameSizeInBlocks.width);
-    }
-
-    static mergePieceToBoard(board: Board, piece: Piece): GameBoardMatrix {
-        const { figure, y, x } = piece;
-        const height = piece.height;
-        const width = piece.width;
-        const matrixCopy = cloneElement(board.matrix);
-        for (let rowNumber = 0; rowNumber < height; rowNumber++) {
-            for (let blockNumber = 0; blockNumber < width; blockNumber++) {
-                const nextBlockFigure = figure[rowNumber][blockNumber];
-                if (nextBlockFigure !== 0) {
-                    matrixCopy[rowNumber + y][blockNumber + x] = nextBlockFigure;
-                }
-            }
-        }
-        return matrixCopy;
     }
 }
