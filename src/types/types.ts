@@ -17,6 +17,7 @@ export type GameCurrentState = {
     nextPiece: Piece,
     started: boolean,
     pause: boolean,
+    lost: boolean,
     gameSizeInBlocks: GameSizeInBlocks,
 }
 
@@ -25,6 +26,7 @@ export type ViewSizeConstants = {
     height: number,
     blockSide: number,
     borderWidth: number,
+    relativeUnit: number,
 }
 
 export type RenderBlockParams = {

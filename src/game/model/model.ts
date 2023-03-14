@@ -34,14 +34,15 @@ export class Model {
             nextPiece: this.nextPiece,
             started: this.started,
             pause: this.pause,
+            lost: this.lost,
             gameSizeInBlocks: this.gameSizeInBlocks,
         };
     }
 
     constructor(view: View, gameSizeInBlocks: GameSizeInBlocks) {
         this.view = view;
-        this.started = true;
-        this.pause = false;
+        this.started = false;
+        this.pause = true;
         this.interval = null;
         this.gameSizeInBlocks = gameSizeInBlocks;
         this.gameBoardStatic = new Board(this.gameSizeInBlocks.width, this.gameSizeInBlocks.height);
@@ -49,7 +50,7 @@ export class Model {
         this.nextPiece = new Piece(this.gameSizeInBlocks.width);
 
         this.view.renderGame(this.getState);
-        this.startTimer();
+        // this.startTimer();
     }
 
     @autobind

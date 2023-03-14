@@ -16,6 +16,7 @@ export class View {
     viewSizeConstants: ViewSizeConstants;
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
+    opacityFull = 1;
     private blockColors = ['none', Colors.i, Colors.j, Colors.l, Colors.o, Colors.s, Colors.t, Colors.z];
 
     constructor(rootId: string, gameWidthInBlocks: number) {
@@ -36,16 +37,23 @@ export class View {
         return {
             width,
             height: width,
+            relativeUnit: width * 0.05,
             borderWidth: borders,
             blockSide: (width / 2 - borders * 2) / widthInBricks,
         };
     }
 
     renderGame(state: GameCurrentState) {
-        const { board, gameSizeInBlocks, nextPiece, speed, score, lines } = state;
+        const { board, gameSizeInBlocks, nextPiece, speed, score, lines, pause, started, lost } = state;
+        const showOverlay = pause || !started || lost;
+
+        this.opacityFull = showOverlay ? 0.5 : 1;
+
         this.clearView();
         this.renderGameBoard(board, gameSizeInBlocks);
         this.renderInfoBoard(nextPiece, speed, score, lines);
+
+        if (showOverlay) this.renderOverlay(state);
     }
 
     private clearView() {
@@ -58,7 +66,7 @@ export class View {
         const height = this.viewSizeConstants.height - this.viewSizeConstants.borderWidth * 2;
         const { blockSide, borderWidth } = this.viewSizeConstants;
 
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = this.opacityFull;
 
         ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
         ctx.fillRect(0, 0, width, height);
@@ -88,26 +96,26 @@ export class View {
     private renderInfoBoard(nextPiece: Piece, speed: number, score: number, lines: number): void {
         const ctx = this.context;
         const left = this.viewSizeConstants.width / 2 + this.viewSizeConstants.blockSide;
-        const yUnit = this.viewSizeConstants.height * 0.05;
+        const { relativeUnit } = this.viewSizeConstants;
         const nextPieceBoard = this.wrapPieceWithEmptyBlocks(nextPiece);
         const boardHeight = nextPieceBoard.length;
         const boardWidth = nextPieceBoard[0].length;
 
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = this.opacityFull;
         ctx.textAlign = 'start';
         ctx.textBaseline = 'top';
         ctx.fillStyle = Colors.uiYellow;
-        ctx.font = `normal ${0.8 * yUnit}px VT323`;
+        ctx.font = `normal ${0.8 * relativeUnit}px VT323`;
 
-        ctx.fillText(`Speed: ${speed}`, left, yUnit);
-        ctx.fillText(`Score: ${score}`, left, yUnit * 2);
-        ctx.fillText(`Lines: ${lines}`, left, yUnit * 3);
-        ctx.fillText('Next piece:', left, yUnit * 4);
+        ctx.fillText(`Speed: ${speed}`, left, relativeUnit);
+        ctx.fillText(`Score: ${score}`, left, relativeUnit * 2);
+        ctx.fillText(`Lines: ${lines}`, left, relativeUnit * 3);
+        ctx.fillText('Next piece:', left, relativeUnit * 4);
 
         ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
         ctx.fillRect(
             left,
-            yUnit * 5,
+            relativeUnit * 5,
             boardWidth * this.viewSizeConstants.blockSide + this.viewSizeConstants.borderWidth,
             boardHeight * this.viewSizeConstants.blockSide + this.viewSizeConstants.borderWidth,
         );
@@ -116,7 +124,7 @@ export class View {
         ctx.strokeStyle = Colors.uiPink;
         ctx.strokeRect(
             left - this.viewSizeConstants.borderWidth / 4,
-            yUnit * 5 - this.viewSizeConstants.borderWidth / 4,
+            relativeUnit * 5 - this.viewSizeConstants.borderWidth / 4,
             boardWidth * this.viewSizeConstants.blockSide + this.viewSizeConstants.borderWidth / 2,
             boardHeight * this.viewSizeConstants.blockSide + this.viewSizeConstants.borderWidth / 2,
         );
@@ -128,10 +136,66 @@ export class View {
                     xInBlocks: blockNumber,
                     yInBlocks: rowNumber,
                     topX: left,
-                    topY: yUnit * 5,
+                    topY: relativeUnit * 5,
                 });
             }
         }
+    }
+
+    private renderBlock(params: RenderBlockParams): void {
+        const { block, xInBlocks, yInBlocks, topX, topY } = params;
+        const ctx = this.context;
+        const { blockSide } = this.viewSizeConstants;
+
+        if (block) {
+            ctx.globalAlpha = this.opacityFull;
+            ctx.fillStyle = this.blockColors[block];
+            ctx.fillRect(
+                topX + blockSide * xInBlocks,
+                topY + blockSide * yInBlocks,
+                blockSide * 0.9,
+                blockSide * 0.9
+            );
+        } else {
+            ctx.globalAlpha = 0.2;
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = Colors.empty;
+            ctx.strokeRect(
+                topX + blockSide * xInBlocks,
+                topY + blockSide * yInBlocks,
+                blockSide * 0.9,
+                blockSide * 0.9
+            );
+        }
+    }
+
+    private renderOverlay(state: GameCurrentState): void {
+        const { speed, score, lines, started, lost } = state;
+        const { relativeUnit, width, blockSide } = this.viewSizeConstants;
+        const text: string[] = [];
+        if (!started) {
+            text.push('Press Space');
+            text.push('to start the game!');
+        } else if (lost) {
+            text.push('What a game!');
+            text.push('And by the numbers:');
+            text.push(`🏆 score: ${score}`);
+            text.push(`💥 lines destroyed: ${lines}`);
+            text.push(`🔥 highest speed: ${speed}`);
+            text.push('Press Space to restart');
+        } else {
+            text.push('Game paused!');
+            text.push('Press Space to resume');
+        }
+        const ctx = this.context;
+        ctx.globalAlpha = 1;
+        ctx.font = `${0.8 * relativeUnit}px VT323`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = lost ? Colors.uiPink : Colors.uiYellow;
+        text.forEach((string, i) => {
+            ctx.fillText(string,  blockSide, width / 2 + relativeUnit * i);
+        });
     }
 
     private wrapPieceWithEmptyBlocks(piece: Piece):GameBoardMatrix {
@@ -201,33 +265,6 @@ export class View {
         }
 
         return figure;
-    }
-
-    private renderBlock(params: RenderBlockParams): void {
-        const { block, xInBlocks, yInBlocks, topX, topY } = params;
-        const ctx = this.context;
-        const { blockSide } = this.viewSizeConstants;
-
-        if (block) {
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = this.blockColors[block];
-            ctx.fillRect(
-                topX + blockSide * xInBlocks,
-                topY + blockSide * yInBlocks,
-                blockSide * 0.9,
-                blockSide * 0.9
-            );
-        } else {
-            ctx.globalAlpha = 0.2;
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = Colors.empty;
-            ctx.strokeRect(
-                topX + blockSide * xInBlocks,
-                topY + blockSide * yInBlocks,
-                blockSide * 0.9,
-                blockSide * 0.9
-            );
-        }
     }
 
     private getFigureString(length: number, contents: GameBlock) {
