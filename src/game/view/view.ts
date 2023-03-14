@@ -44,14 +44,14 @@ export class View {
     }
 
     renderGame(state: GameCurrentState) {
-        const { board, gameSizeInBlocks, nextPiece, speed, score, lines, pause, started, lost } = state;
+        const { board, gameSizeInBlocks, pause, started, lost } = state;
         const showOverlay = pause || !started || lost;
 
         this.opacityFull = showOverlay ? 0.5 : 1;
 
         this.clearView();
         this.renderGameBoard(board, gameSizeInBlocks);
-        this.renderInfoBoard(nextPiece, speed, score, lines);
+        this.renderInfoBoard(state);
 
         if (showOverlay) this.renderOverlay(state);
     }
@@ -93,7 +93,8 @@ export class View {
         }
     }
 
-    private renderInfoBoard(nextPiece: Piece, speed: number, score: number, lines: number): void {
+    private renderInfoBoard(state: GameCurrentState): void {
+        const { speed, speedChanged, score, scoreChanged, lines, linesChanged, nextPiece } = state;
         const ctx = this.context;
         const left = this.viewSizeConstants.width / 2 + this.viewSizeConstants.blockSide;
         const { relativeUnit } = this.viewSizeConstants;
@@ -108,8 +109,23 @@ export class View {
         ctx.font = `normal ${0.8 * relativeUnit}px VT323`;
 
         ctx.fillText(`Speed: ${speed}`, left, relativeUnit);
+        if (speedChanged) {
+            ctx.fillStyle = Colors.uiPink;
+            ctx.fillText(`+${speedChanged}`, left + 2.5 * relativeUnit + speed.toString().length * 0.3 * relativeUnit, relativeUnit);
+            ctx.fillStyle = Colors.uiYellow;
+        }
         ctx.fillText(`Score: ${score}`, left, relativeUnit * 2);
+        if (scoreChanged) {
+            ctx.fillStyle = Colors.uiPink;
+            ctx.fillText(`+${scoreChanged}`, left + 2.5 * relativeUnit + score.toString().length * 0.3 * relativeUnit, relativeUnit * 2);
+            ctx.fillStyle = Colors.uiYellow;
+        }
         ctx.fillText(`Lines: ${lines}`, left, relativeUnit * 3);
+        if (linesChanged) {
+            ctx.fillStyle = Colors.uiPink;
+            ctx.fillText(`+${linesChanged}`, left + 2.5 * relativeUnit + lines.toString().length * 0.3 * relativeUnit, relativeUnit * 3);
+            ctx.fillStyle = Colors.uiYellow;
+        }
         ctx.fillText('Next piece:', left, relativeUnit * 4);
 
         ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';

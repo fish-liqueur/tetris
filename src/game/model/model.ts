@@ -31,8 +31,11 @@ export class Model {
     get getState(): GameCurrentState {
         return {
             speed: this.speed,
+            speedChanged: this.speedChanged,
             score: this.score,
+            scoreChanged: this.scoreChanged,
             lines: this.lines,
+            linesChanged: this.linesChanged,
             board: Model.mergePieceToBoard(this.gameBoardStatic, this.currentPiece),
             nextPiece: this.nextPiece,
             started: this.started,

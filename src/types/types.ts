@@ -11,8 +11,11 @@ export type GameSizeInBlocks = {
 
 export type GameCurrentState = {
     speed: number,
+    speedChanged: number,
     score: number,
+    scoreChanged: number,
     lines: number,
+    linesChanged: number,
     board: GameBoardMatrix,
     nextPiece: Piece,
     started: boolean,
