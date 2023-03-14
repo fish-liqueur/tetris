@@ -43,7 +43,6 @@ export class View {
 
     renderGame(state: GameCurrentState) {
         const { board, gameSizeInBlocks, nextPiece, speed, score, lines } = state;
-        console.log('board', board);
         this.clearView();
         this.renderGameBoard(board, gameSizeInBlocks);
         this.renderInfoBoard(nextPiece, speed, score, lines);
@@ -93,7 +92,6 @@ export class View {
         const nextPieceBoard = this.wrapPieceWithEmptyBlocks(nextPiece);
         const boardHeight = nextPieceBoard.length;
         const boardWidth = nextPieceBoard[0].length;
-        console.log('nextPieceBoard ', nextPieceBoard);
 
         ctx.globalAlpha = 1;
         ctx.textAlign = 'start';
