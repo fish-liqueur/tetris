@@ -15,5 +15,4 @@ export class Game {
         this.model = new Model(this.view, { height, width });
         this.controller = new Controller(this.model);
     }
-
 }

@@ -37,7 +37,7 @@ export class View {
         return {
             width,
             height: width,
-            relativeUnit: width * 0.05,
+            relativeUnit: Math.round(width * 0.05),
             borderWidth: borders,
             blockSide: (width / 2 - borders * 2) / widthInBricks,
         };
