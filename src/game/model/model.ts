@@ -59,7 +59,7 @@ export class Model {
     }
 
 
-    startTimer() {
+    startTimer():void {
         const speed = 1000 - this.speed * 100;
         this.pause = false;
         this.view.renderGame(this.getState);
@@ -69,7 +69,7 @@ export class Model {
         }
     }
 
-    stopTimer() {
+    stopTimer():void {
         if (this.interval) {
             this.pause = true;
             clearInterval(this.interval);
@@ -78,7 +78,7 @@ export class Model {
         this.view.renderGame(this.getState);
     }
 
-    handlePressSpace() {
+    handlePressSpace():void {
         if (!this.started) {
             this.started = true;
             this.startTimer();
@@ -145,6 +145,11 @@ export class Model {
             speedAtTheEndOfTurn = Math.floor(this.lines / 10);
             this.speedChanged = speedAtTheEndOfTurn - this.speed;
             this.speed = speedAtTheEndOfTurn;
+            if (this.speedChanged) {
+                this.stopTimer();
+                this.startTimer();
+                return;
+            }
         }
 
         this.view.renderGame(this.getState);
