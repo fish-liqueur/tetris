@@ -3,17 +3,19 @@
   "version": "0.1",
   "description": "Tetris game and my first TS project",
   "main": "app.js",
+  "type": "module",
   "scripts": {
-    "start": "webpack-dev-server",
-    "build": "webpack"
+    "build": "tsc && vite build",
+    "dev": "vite serve",
+    "preview": "vite preview"
   },
   "author": "fish-liqueur",
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
     "clean-webpack-plugin": "^4.0.0",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.5",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.11.1"
+    "vite": "^4.3.8",
+    "vite-plugin-html": "^3.2.0"
   }
 }
