@@ -1,22 +1,11 @@
 import {fileURLToPath, URL} from "node:url";
+import { defineConfig } from 'vite'
 
-export default {
-    build: {
-        rollupOptions: {
-            input: {
-                app: 'src/app.ts',
-            },
-            output: {
-                dir: 'dist',
-                assetFileNames: 'style[extname]',
-            }
-        },
-        
-    },
+export default defineConfig({
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),
             '@game': fileURLToPath(new URL('./src/game', import.meta.url)),
         }
     },
-};
+});
