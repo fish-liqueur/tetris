@@ -15,19 +15,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="tetris">
+<div class="tetris tetris_touch">
   <h1 class="tetris__header">Tetris</h1>
-  <div id="game" class="tetris__game"></div>
-  <ul class="tetris__controls">
-    <li>CONTROLS</li>
-    <li>⬆: rotate</li>
-    <li>⬅⬇➡: move</li>
-    <li>Space: play/pause</li>
-  </ul>
-
+  <div class="tetris__content">
+    <div id="game" class="tetris__game"></div>
+    <div id="controls" class="tetris__controls-touch"></div>
+    <ul class="tetris__controls-legend">
+      <li>CONTROLS</li>
+      <li>⬆: rotate</li>
+      <li>⬅⬇➡: move</li>
+      <li>Space: play/pause</li>
+    </ul>
+  </div>
 </div>
 <script type="module" src="/src/app.ts"></script>
 </body>
