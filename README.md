@@ -6,3 +6,5 @@ Here I use MVC approach. Controller registers user actions, Model contains the g
 I borrowed some general ideas and a couple of utility methods from [Tetris by Turmag](https://github.com/Turmag/Tetris) 🙏
 
 [Demo here](https://fish-liqueur.github.io/tetris/)
+
+Supports touchscreen gamepad (from a separate repo [canvas-gamepad](https://github.com/fish-liqueur/canvas-gamepad))
