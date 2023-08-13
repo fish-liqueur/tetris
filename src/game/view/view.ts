@@ -197,8 +197,10 @@ export class View {
         ctx.fillStyle = Colors.uiYellow;
 
         if (!started) {
-            ctx.fillText('Press Space',  textX, width / 2 + relativeUnit);
+            ctx.fillText('Press Space / Play',  textX, width / 2 + relativeUnit);
             ctx.fillText('to start the game!',  textX, width / 2 + 2 * relativeUnit);
+            ctx.fillText('Or tap the screen to',  textX, width / 2 + 4 * relativeUnit);
+            ctx.fillText('enable touch buttons',  textX, width / 2 + 5 * relativeUnit);
         } else if (lost) {
             ctx.fillText('What a game!',  textX, width / 2 + relativeUnit);
             ctx.fillStyle = Colors.uiPink;
@@ -207,10 +209,10 @@ export class View {
             ctx.fillText(`🧨 lines destroyed: ${lines}`,  textX, width / 2 + 5 * relativeUnit);
             ctx.fillText(`🔥 highest speed: ${speed}`,  textX, width / 2 + 6 * relativeUnit);
             ctx.fillStyle = Colors.uiYellow;
-            ctx.fillText('Press Space to restart',  textX, width / 2 + 8 * relativeUnit);
+            ctx.fillText('Press Space / Play to restart',  textX, width / 2 + 8 * relativeUnit);
         } else {
             ctx.fillText('Game paused',  textX, width / 2 + relativeUnit);
-            ctx.fillText('Press Space to resume',  textX, width / 2 + 2 * relativeUnit);
+            ctx.fillText('Press Space / Play to resume',  textX, width / 2 + 2 * relativeUnit);
         }
     }
 

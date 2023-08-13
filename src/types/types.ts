@@ -41,3 +41,5 @@ export type RenderBlockParams = {
 }
 
 export type PieceMoveType = 'left'|'right'|'down'|'rotate';
+
+export type PossibleControlCommandKeys = PieceMoveType|'play-pause';

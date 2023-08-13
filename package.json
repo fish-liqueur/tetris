@@ -20,5 +20,8 @@
     "vite": "^4.3.8",
     "vite-plugin-html": "^3.2.0",
     "vitest": "^0.31.1"
+  },
+  "dependencies": {
+    "canvas-gamepad": "github:fish-liqueur/canvas-gamepad#master"
   }
 }
