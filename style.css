@@ -10,8 +10,8 @@ html {
 }
 
 body {
-    height: 100vh;
-    min-height: 100vh;
+    height: 100dvh;
+    min-height: 100dvh;
     background: linear-gradient(to left top, #140843, #5D1126 80%);
     background-size: cover;
     color: #FCED5E;
