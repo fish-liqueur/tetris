@@ -8,42 +8,38 @@ import {
     ViewSizeConstants
 } from "@/types/types"
 import {Piece} from "@game/model/piece";
+import {getCanvasWidth} from "@/utils/utils";
+import {autobind} from "@/decorators/autobind";
 
 export class View {
     rootElement: HTMLDivElement;
     width: number;
     height: number;
     viewSizeConstants: ViewSizeConstants;
+    gameWidthInBlocks: number;
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
     opacityFull = 1;
+    state: GameCurrentState | null = null;
     private blockColors = ['none', Colors.i, Colors.j, Colors.l, Colors.o, Colors.s, Colors.t, Colors.z];
 
     constructor(rootId: string, gameWidthInBlocks: number) {
-        const canvasMaxWidth = 650;
+        this.gameWidthInBlocks = gameWidthInBlocks;
         this.rootElement = document.getElementById(rootId)! as HTMLDivElement;
-        const canvasWidth = this.rootElement.offsetWidth < canvasMaxWidth ? this.rootElement.offsetWidth :  canvasMaxWidth;
+        const canvasWidth = getCanvasWidth();
         this.width = this.height = canvasWidth;
-        this.viewSizeConstants = this.getSizeConstants(canvasWidth, gameWidthInBlocks);
+        this.viewSizeConstants = this.getSizeConstants(canvasWidth, this.gameWidthInBlocks);
         this.canvas = document.createElement('canvas') as HTMLCanvasElement;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.context = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.rootElement.appendChild(this.canvas);
+
+        window.addEventListener("resize", this.resizeGameboard);
     }
 
-    getSizeConstants(width: number, widthInBricks: number): ViewSizeConstants {
-        const borders = width / 2 * 0.02
-        return {
-            width,
-            height: width,
-            relativeUnit: Math.round(width * 0.05),
-            borderWidth: borders,
-            blockSide: (width / 2 - borders * 2) / widthInBricks,
-        };
-    }
-
-    renderGame(state: GameCurrentState) {
+    renderGame(state: GameCurrentState): void {
+        this.state = state;
         const { board, gameSizeInBlocks, pause, started, lost } = state;
         const showOverlay = pause || !started || lost;
 
@@ -54,6 +50,31 @@ export class View {
         this.renderInfoBoard(state);
 
         if (showOverlay) this.renderOverlay(state);
+    }
+
+    @autobind
+    resizeGameboard(): void {
+        if (!this.state) {
+            return;
+        }
+
+        const canvasWidth = getCanvasWidth();
+        this.width = this.height = canvasWidth;
+        this.viewSizeConstants = this.getSizeConstants(canvasWidth, this.gameWidthInBlocks);
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.renderGame(this.state);
+    }
+
+    private getSizeConstants(width: number, widthInBricks: number): ViewSizeConstants {
+        const borders = width / 2 * 0.02
+        return {
+            width,
+            height: width,
+            relativeUnit: Math.round(width * 0.05),
+            borderWidth: borders,
+            blockSide: (width / 2 - borders * 2) / widthInBricks,
+        };
     }
 
     private clearView() {

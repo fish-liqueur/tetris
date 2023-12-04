@@ -70,6 +70,13 @@ body {
     display: none;
 }
 
+@media (orientation: landscape) {
+    .tetris__content {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
+
 @media (max-width: 1260px) and (orientation: landscape) {
     .tetris__content {
         flex-direction: row;
