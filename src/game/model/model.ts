@@ -22,6 +22,7 @@ export class Model {
     lines = 0;
     linesChanged = 0;
     interval: NodeJS.Timer | null;
+    speedProgression = [1000, 900, 800, 700, 600, 500, 450, 400, 350, 310, 270, 250, 230, 210, 190, 170, 160, 150, 140, 130, 120, 110];
 
     gameSizeInBlocks: GameSizeInBlocks;
     gameBoardStatic: Board;
@@ -60,7 +61,7 @@ export class Model {
 
 
     startTimer():void {
-        const speed = 1000 - this.speed * 100;
+        const speed = this.speedProgression[this.speed] || 100;
         this.pause = false;
         this.view.renderGame(this.getState);
 
